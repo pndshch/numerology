@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>数秘術 占い 🔮</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;
+    -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+
+  :root{
+    --bg-1:#0a0426; --bg-2:#1f0f44; --bg-3:#2d0852;
+    --gold:#d4af37; --gold-bright:#ffd700; --gold-soft:#f4e4ba;
+    --cream:#f4e9d8; --cream-dim:#cdb893;
+    --pink:#c64ad6; --violet:#8b5cf6;
+    --shadow-gold:0 0 24px rgba(212,175,55,.35);
+  }
+
+  html,body{
+    min-height:100dvh;
+    font-family:'Hiragino Mincho ProN','Yu Mincho','游明朝',serif;
+    color:var(--cream);
+    background:
+      radial-gradient(ellipse at 30% 10%, #4c1f8a 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 90%, #5b1a76 0%, transparent 50%),
+      linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-3) 100%);
+    background-attachment:fixed;
+    overflow-x:hidden;
+  }
+
+  /* ───── 背景の星空 ───── */
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle ease-in-out infinite;}
+  .star.gold{background:var(--gold-bright);}
+  @keyframes twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}
+
+  /* ───── レイアウト ───── */
+  main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:30px 20px 60px;}
+
+  .scr{display:none;}
+  .scr.active{display:block;animation:fadeIn .6s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ───── タイトル ───── */
+  .ttl-zone{text-align:center;padding:30px 0 14px;position:relative;}
+  .moon{
+    font-size:3.2rem;line-height:1;margin-bottom:8px;
+    filter:drop-shadow(0 0 22px rgba(255,215,0,.5));
+    animation:moonGlow 4s ease-in-out infinite;
+  }
+  @keyframes moonGlow{0%,100%{filter:drop-shadow(0 0 18px rgba(255,215,0,.4))}50%{filter:drop-shadow(0 0 32px rgba(255,215,0,.7))}}
+  h1{
+    font-size:clamp(2rem,7vw,2.6rem);
+    font-weight:400;letter-spacing:.18em;
+    background:linear-gradient(135deg,var(--gold-bright),var(--cream),var(--gold-bright));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-bottom:6px;
+  }
+  .ttl-sub{
+    font-size:.95rem;color:var(--cream-dim);letter-spacing:.18em;
+    font-family:'Yu Mincho',serif;
+  }
+  .ornament{
+    display:flex;align-items:center;justify-content:center;
+    gap:10px;color:var(--gold);font-size:.9rem;margin:18px 0;
+    opacity:.7;
+  }
+  .ornament::before, .ornament::after{
+    content:''; height:1px; flex:0 0 60px;
+    background:linear-gradient(to var(--dir,right),transparent,var(--gold));
+  }
+  .ornament::before{--dir:left;}
+
+  /* ───── INPUT CARD ───── */
+  .card{
+    background:linear-gradient(160deg, rgba(40,15,80,.65), rgba(20,8,50,.7));
+    border:1px solid rgba(212,175,55,.25);
+    border-radius:18px;
+    padding:24px 22px;
+    box-shadow:0 14px 40px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  }
+  .card+.card{margin-top:18px;}
+  .card-label{
+    font-size:.8rem;letter-spacing:.15em;color:var(--gold-soft);
+    margin-bottom:14px;text-align:center;
+  }
+  .lead{
+    font-size:1rem;color:var(--cream);line-height:1.95;text-align:center;
+    margin:6px 0 22px;font-family:'Yu Mincho',serif;
+  }
+
+  /* 日付セレクト */
+  .date-row{display:flex;gap:10px;justify-content:center;margin:6px 0 22px;}
+  .date-sel{
+    flex:1;min-width:0;
+    background:rgba(10,4,38,.85);
+    color:var(--cream);
+    border:1px solid rgba(212,175,55,.4);
+    border-radius:12px;
+    padding:14px 10px;
+    font-size:1.05rem;font-family:inherit;
+    text-align:center;text-align-last:center;
+    cursor:pointer;
+    -webkit-appearance:none;-moz-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23d4af37' d='M0 0h12L6 8z'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 10px center;
+    background-size:9px;
+    padding-right:22px;
+  }
+  .date-sel:focus{outline:none;border-color:var(--gold);box-shadow:var(--shadow-gold);}
+
+  /* メインボタン */
+  .btn-main{
+    display:block;width:100%;
+    background:linear-gradient(135deg,#a23eb5,#5b21b6 60%,#312175);
+    color:var(--gold-bright);
+    border:1.5px solid var(--gold);
+    border-radius:14px;
+    padding:16px 22px;
+    font-size:1.15rem;letter-spacing:.18em;
+    font-family:inherit;cursor:pointer;
+    box-shadow:var(--shadow-gold), 0 6px 20px rgba(160,80,200,.35);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .btn-main:active{transform:translateY(2px);box-shadow:0 0 16px rgba(212,175,55,.4),0 2px 12px rgba(160,80,200,.4);}
+  .btn-sub{
+    display:block;width:100%;
+    background:transparent;color:var(--gold-soft);
+    border:1px solid rgba(212,175,55,.4);border-radius:14px;
+    padding:13px 18px;font-size:1rem;letter-spacing:.12em;
+    font-family:inherit;cursor:pointer;margin-top:14px;
+  }
+
+  /* ───── LOADING ───── */
+  #loadScr{text-align:center;padding-top:18vh;}
+  .orb-wrap{
+    position:relative;width:140px;height:140px;margin:0 auto 30px;
+  }
+  .orb{
+    position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff 0%, var(--gold-bright) 30%, var(--violet) 70%, transparent 100%);
+    box-shadow:0 0 60px var(--gold), 0 0 120px var(--violet);
+    animation:orbPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes orbPulse{0%,100%{transform:scale(.85);opacity:.85}50%{transform:scale(1.05);opacity:1}}
+  .orb-ring{
+    position:absolute;inset:-15px;border-radius:50%;
+    border:1px solid rgba(212,175,55,.4);
+    animation:ringSpin 6s linear infinite;
+  }
+  .orb-ring::before, .orb-ring::after{
+    content:'';position:absolute;width:8px;height:8px;border-radius:50%;
+    background:var(--gold-bright);box-shadow:0 0 12px var(--gold);
+  }
+  .orb-ring::before{top:-4px;left:50%;transform:translateX(-50%);}
+  .orb-ring::after{bottom:-4px;left:50%;transform:translateX(-50%);}
+  @keyframes ringSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .load-msg{font-size:1rem;color:var(--cream-dim);letter-spacing:.2em;}
+
+  /* ───── RESULT ───── */
+  .hero{
+    text-align:center;padding:8px 0 22px;
+    border-bottom:1px solid rgba(212,175,55,.25);margin-bottom:22px;
+  }
+  .hero-cap{
+    font-size:.78rem;letter-spacing:.3em;color:var(--gold);
+    margin-bottom:14px;
+  }
+  .hero-num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:170px;height:170px;border-radius:50%;
+    font-family:'Times New Roman',serif;font-weight:700;
+    font-size:6.4rem;line-height:1;color:#fff;
+    background:radial-gradient(circle at 35% 30%, #fff 0%, var(--gold-bright) 35%, #b87706 80%);
+    box-shadow:
+      0 0 50px rgba(255,215,0,.55),
+      inset 0 0 30px rgba(255,255,255,.5),
+      inset 0 -8px 24px rgba(180,80,30,.4);
+    text-shadow:0 2px 6px rgba(0,0,0,.3);
+    margin:6px 0 14px;
+    animation:heroPop 1s cubic-bezier(.175,.885,.32,1.275);
+  }
+  .hero-num.master{
+    font-size:5rem;letter-spacing:-.05em;
+    background:radial-gradient(circle at 35% 30%, #fff 0%, #ff9ff3 35%, #6c5ce7 80%);
+    box-shadow:0 0 50px rgba(140,90,255,.6),inset 0 0 30px rgba(255,255,255,.6);
+  }
+  @keyframes heroPop{0%{transform:scale(0) rotate(-90deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+  .hero-title{
+    font-size:1.9rem;color:var(--gold-bright);font-weight:500;
+    letter-spacing:.1em;margin-bottom:4px;
+  }
+  .hero-sub{font-size:.95rem;color:var(--cream-dim);font-family:'Yu Mincho',serif;}
+  .hero-keys{
+    display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px;
+  }
+  .key-pill{
+    background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.35);
+    color:var(--gold-soft);font-size:.78rem;
+    padding:4px 11px;border-radius:14px;letter-spacing:.06em;
+  }
+
+  /* セクション */
+  .sec{margin-bottom:18px;}
+  .sec h3{
+    font-size:.85rem;letter-spacing:.25em;color:var(--gold);
+    margin-bottom:12px;font-weight:500;
+    display:flex;align-items:center;gap:10px;
+  }
+  .sec h3::before{
+    content:'❖';color:var(--gold-bright);font-size:1rem;
+  }
+  .sec p{
+    font-size:.97rem;line-height:2.05;color:var(--cream);
+    font-family:'Yu Mincho','Hiragino Mincho ProN',serif;
+  }
+  .traits{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+  .trait{
+    background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.25);
+    color:var(--cream);font-size:.83rem;padding:4px 10px;border-radius:10px;
+  }
+  .trait.minus{border-color:rgba(200,90,90,.35);color:#f0c2c2;background:rgba(150,40,40,.1);}
+
+  /* ラッキー要素 */
+  .lucky-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .lucky{
+    background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.25);
+    border-radius:12px;padding:12px 14px;
+  }
+  .lucky-lbl{font-size:.72rem;color:var(--gold);letter-spacing:.15em;margin-bottom:4px;}
+  .lucky-val{font-size:1.05rem;color:var(--cream);font-family:'Yu Mincho',serif;}
+  .color-dot{display:inline-block;width:14px;height:14px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.4);vertical-align:middle;margin-right:6px;}
+
+  /* サブ数字（誕生日数・個人年数） */
+  .sub-card{
+    background:linear-gradient(160deg, rgba(50,20,90,.5), rgba(20,8,50,.6));
+    border:1px solid rgba(212,175,55,.2);border-radius:14px;
+    padding:18px;display:flex;align-items:center;gap:16px;
+  }
+  .sub-num{
+    flex-shrink:0;width:62px;height:62px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Times New Roman',serif;font-size:2rem;font-weight:700;
+    background:radial-gradient(circle at 35% 30%, #fff 0%, var(--gold-bright) 50%, #946000 100%);
+    color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.3);
+    box-shadow:0 0 24px rgba(255,215,0,.35);
+  }
+  .sub-num.violet{background:radial-gradient(circle at 35% 30%, #fff 0%, #c084fc 50%, #4c1d95 100%);box-shadow:0 0 24px rgba(180,120,255,.4);}
+  .sub-info h4{font-size:.78rem;color:var(--gold);letter-spacing:.18em;font-weight:400;margin-bottom:4px;}
+  .sub-info .sub-ttl{font-size:1.1rem;color:var(--cream);margin-bottom:3px;font-family:'Yu Mincho',serif;}
+  .sub-info .sub-desc{font-size:.85rem;color:var(--cream-dim);line-height:1.7;}
+
+  /* 計算式 */
+  .calc{
+    background:rgba(0,0,0,.25);border-radius:10px;
+    padding:14px 16px;font-family:'Courier New',monospace;
+    font-size:.85rem;color:var(--cream-dim);line-height:1.9;
+    text-align:center;
+  }
+  .calc strong{color:var(--gold-bright);}
+
+  /* 戻るボタン */
+  .back-zone{margin-top:30px;text-align:center;}
+  .footer-orn{
+    text-align:center;margin:30px 0 10px;
+    color:var(--gold);opacity:.5;font-size:.9rem;letter-spacing:.5em;
+  }
+
+  /* エラー */
+  .err{
+    background:rgba(150,40,40,.18);
+    border:1px solid rgba(255,90,90,.4);
+    color:#fcb;padding:10px 14px;border-radius:10px;
+    font-size:.85rem;margin-bottom:12px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<main>
+  <!-- ───── 入力画面 ───── -->
+  <div id="inputScr" class="scr active">
+    <div class="ttl-zone">
+      <div class="moon">🌙</div>
+      <h1>数秘術 占い</h1>
+      <div class="ttl-sub">— Numerology Reading —</div>
+    </div>
+
+    <div class="ornament">✧ ✦ ✧</div>
+
+    <div class="card">
+      <div class="card-label">あなたの 生年月日</div>
+      <p class="lead">
+        生まれた瞬間に刻まれた<br>
+        あなただけの「数」を 読み解きます
+      </p>
+      <div class="date-row">
+        <select id="selY" class="date-sel" aria-label="年"></select>
+        <select id="selM" class="date-sel" aria-label="月"></select>
+        <select id="selD" class="date-sel" aria-label="日"></select>
+      </div>
+      <div id="errZone"></div>
+      <button class="btn-main" onclick="onDivine()">✦ 占う ✦</button>
+    </div>
+
+    <div class="footer-orn">. . .</div>
+  </div>
+
+  <!-- ───── ローディング画面 ───── -->
+  <div id="loadScr" class="scr">
+    <div class="orb-wrap">
+      <div class="orb"></div>
+      <div class="orb-ring"></div>
+    </div>
+    <div class="load-msg" id="loadMsg">星と数を 読み解いています…</div>
+  </div>
+
+  <!-- ───── 結果画面 ───── -->
+  <div id="resultScr" class="scr">
+    <div class="hero">
+      <div class="hero-cap">あなたの 運命数 — LIFE PATH</div>
+      <div class="hero-num" id="heroNum">0</div>
+      <div class="hero-title" id="heroTitle"></div>
+      <div class="hero-sub"   id="heroSub"></div>
+      <div class="hero-keys"  id="heroKeys"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec">
+        <h3>あなたの 性格と 人生のテーマ</h3>
+        <p id="rPersona"></p>
+      </div>
+
+      <div class="sec">
+        <h3>長所と 短所</h3>
+        <div class="traits" id="rStrengths"></div>
+        <div class="traits" id="rWeaknesses" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="sec">
+        <h3>恋愛の 傾向</h3>
+        <p id="rLove"></p>
+      </div>
+
+      <div class="sec">
+        <h3>仕事と 適職</h3>
+        <p id="rCareer"></p>
+        <div class="traits" id="rCareerList" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="sec">
+        <h3>あなたを 高める ラッキー</h3>
+        <div class="lucky-grid">
+          <div class="lucky">
+            <div class="lucky-lbl">COLOR</div>
+            <div class="lucky-val"><span class="color-dot" id="cDot"></span><span id="cName"></span></div>
+          </div>
+          <div class="lucky">
+            <div class="lucky-lbl">STONE</div>
+            <div class="lucky-val" id="cStone"></div>
+          </div>
+          <div class="lucky">
+            <div class="lucky-lbl">DAY</div>
+            <div class="lucky-val" id="cDay"></div>
+          </div>
+          <div class="lucky">
+            <div class="lucky-lbl">NUMBERS</div>
+            <div class="lucky-val" id="cCompat"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec" style="margin-bottom:14px;">
+        <h3>もうひとつの 数</h3>
+      </div>
+      <div class="sub-card" style="margin-bottom:12px;">
+        <div class="sub-num" id="dayNum">0</div>
+        <div class="sub-info">
+          <h4>誕生日数 — BIRTH DAY</h4>
+          <div class="sub-ttl" id="dayTitle"></div>
+          <div class="sub-desc" id="dayDesc"></div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-num violet" id="pyNum">0</div>
+        <div class="sub-info">
+          <h4 id="pyHead">2026年の あなたの テーマ</h4>
+          <div class="sub-ttl" id="pyTitle"></div>
+          <div class="sub-desc" id="pyDesc"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec">
+        <h3>計算の 内訳</h3>
+        <div class="calc" id="calcBox"></div>
+      </div>
+    </div>
+
+    <div class="back-zone">
+      <button class="btn-sub" onclick="goInput()">← もういちど 占う</button>
+    </div>
+    <div class="footer-orn">. ✧ .</div>
+  </div>
+</main>
+
+<script>
+// ============================================================
+//  星空生成
+// ============================================================
+(function(){
+  const layer = document.getElementById('stars');
+  for(let i=0;i<90;i++){
+    const s = document.createElement('div');
+    s.className = 'star' + (Math.random()<.18 ? ' gold' : '');
+    const sz = .8 + Math.random()*2.4;
+    s.style.cssText = `
+      left:${Math.random()*100}%; top:${Math.random()*100}%;
+      width:${sz}px; height:${sz}px;
+      animation-duration:${1.6+Math.random()*4}s;
+      animation-delay:${Math.random()*4}s;
+    `;
+    layer.appendChild(s);
+  }
+})();
+
+// ============================================================
+//  日付セレクト初期化
+// ============================================================
+(function initDateSelects(){
+  const yEl = document.getElementById('selY');
+  const mEl = document.getElementById('selM');
+  const dEl = document.getElementById('selD');
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  // 1900 から 今年まで
+  yEl.innerHTML = '<option value="">年</option>';
+  for(let y = thisYear; y >= 1900; y--){
+    yEl.innerHTML += `<option value="${y}">${y}年</option>`;
+  }
+  mEl.innerHTML = '<option value="">月</option>';
+  for(let m = 1; m <= 12; m++){
+    mEl.innerHTML += `<option value="${m}">${m}月</option>`;
+  }
+  dEl.innerHTML = '<option value="">日</option>';
+  for(let d = 1; d <= 31; d++){
+    dEl.innerHTML += `<option value="${d}">${d}日</option>`;
+  }
+  // 月変更時に日数を調整
+  function updateDays(){
+    const y = +yEl.value, m = +mEl.value;
+    const cur = +dEl.value;
+    const last = (y && m) ? new Date(y, m, 0).getDate() : 31;
+    dEl.innerHTML = '<option value="">日</option>';
+    for(let d = 1; d <= last; d++){
+      dEl.innerHTML += `<option value="${d}"${d===cur?' selected':''}>${d}日</option>`;
+    }
+  }
+  yEl.addEventListener('change', updateDays);
+  mEl.addEventListener('change', updateDays);
+})();
+
+// ============================================================
+//  数秘術 計算
+// ============================================================
+function digitSum(n){
+  let s = 0;
+  for(const c of String(Math.abs(n))) s += +c || 0;
+  return s;
+}
+function reduceNum(n){
+  if (n === 11 || n === 22 || n === 33) return n;
+  while(n > 9){
+    n = digitSum(n);
+    if (n === 11 || n === 22 || n === 33) return n;
+  }
+  return n;
+}
+function lifePathDetail(y, m, d){
+  // 各要素を先に reduce してから合計（マスターナンバーを保持）
+  const ry = reduceNum(y);
+  const rm = reduceNum(m);
+  const rd = reduceNum(d);
+  const sum = ry + rm + rd;
+  const lp = reduceNum(sum);
+  return { ry, rm, rd, sum, lp };
+}
+function birthDayNumber(d){ return reduceNum(d); }
+function personalYearNumber(month, day, year){
+  return reduceNum(reduceNum(month) + reduceNum(day) + reduceNum(year));
+}
+
+// ============================================================
+//  数の意味データ
+// ============================================================
+const NUMBERS = {
+  1: {
+    title:'開拓者', sub:'新しい道を切り開く 生まれながらの リーダー',
+    keys:['リーダーシップ','独立','創造','勇気','行動'],
+    persona:'1という数字は「始まり」を象徴します。あなたは生まれながらにして道を切り開く力を持ち、誰かに従うよりも自らの判断で進むことを選びます。創造性と決断力にあふれ、困難に出会っても自分の力で乗り越えていく強さがあるでしょう。他人と同じ道では満たされない魂の持ち主であり、唯一無二の存在として輝くために生まれてきました。',
+    strengths:['行動力','決断力','独創性','責任感','勇気','カリスマ性'],
+    weaknesses:['頑固','独善的','せっかち','孤独感'],
+    love:'恋愛では主導権を握りたがる傾向があり、自立した相手に魅力を感じます。ただ本当のあなたは、強さの奥に温かさを隠している人。リードしすぎず、相手の声に耳を傾けることで深い絆が育ちます。',
+    careerText:'自分の判断で動ける役割でこそ才能が花開きます。組織に縛られると窮屈さを感じやすいでしょう。',
+    careerList:['経営者','起業家','リーダー職','開拓者','芸術家','政治家'],
+    compat:[3,5,6],
+    color:{name:'赤・深紅', hex:'#e63946'}, stone:'ルビー', day:'日曜日',
+  },
+  2: {
+    title:'調和の人', sub:'人と人を 結ぶ 繊細で 優しい 心',
+    keys:['調和','協力','繊細','直感','受容'],
+    persona:'2は「対」「ペア」を象徴する数字。あなたは人の感情を敏感に感じ取る力があり、対立する者の間に入って和をもたらす才能があります。表に立つよりも、誰かを支え、寄り添うことで本領を発揮する魂です。一見おだやかですが、その内側には鋭い直感と深い洞察力が宿っています。',
+    strengths:['共感力','協調性','直感','忍耐','繊細さ','聞き上手'],
+    weaknesses:['依存的','優柔不断','傷つきやすい','自己主張が苦手'],
+    love:'相手に合わせる優しさを持ちますが、自分を消しすぎると苦しくなります。本当のパートナーとは、お互いの違いを尊重し合える人。自分の感情を素直に伝える勇気が、関係を深めます。',
+    careerText:'チームの中で力を発揮するタイプ。誰かをサポートし、関係性を整える仕事が向いています。',
+    careerList:['カウンセラー','看護師','秘書','外交官','調停者','ヒーラー'],
+    compat:[4,6,8],
+    color:{name:'白・銀色', hex:'#e8e8f0'}, stone:'ムーンストーン', day:'月曜日',
+  },
+  3: {
+    title:'表現者', sub:'人生を 彩る 明るく 創造的な 楽天家',
+    keys:['創造','表現','楽観','コミュニケーション','喜び'],
+    persona:'3は「子供」「祝祭」を象徴する数字。あなたは生まれながらに人を楽しませる才能を持ち、言葉や芸術、ユーモアで周囲を明るく照らします。無邪気さと豊かな想像力こそがあなたの財産。人生を遊ぶように生きることで、最も自分らしくいられるでしょう。',
+    strengths:['表現力','社交性','楽観','創造力','機知','インスピレーション'],
+    weaknesses:['浪費癖','飽きっぽい','深さに欠ける','感情の起伏'],
+    love:'明るく華やかな恋愛を好みます。退屈や束縛は最大の敵。会話と笑いが絶えない関係が理想ですが、一時の感情に流されず、心の奥でつながれる相手を選ぶことが大切です。',
+    careerText:'創造性と表現力を生かせる場で輝きます。決まり切った仕事では才能が眠ってしまいます。',
+    careerList:['作家','俳優','歌手','デザイナー','広告','芸能関係','講師'],
+    compat:[1,5,9],
+    color:{name:'黄色・オレンジ', hex:'#f6c945'}, stone:'シトリン・トパーズ', day:'木曜日',
+  },
+  4: {
+    title:'建築家', sub:'誠実で 粘り強く 確かな 未来を 築く 人',
+    keys:['安定','努力','誠実','秩序','実直'],
+    persona:'4は「土台」を象徴する数字。あなたは地に足のついた現実主義者で、コツコツと積み上げることで揺るぎない人生を築きます。派手さはなくとも、その誠実さと粘り強さは何にも代えがたい財産。周囲から信頼され、長く頼られる存在となるでしょう。',
+    strengths:['誠実','勤勉','責任感','忍耐','実用性','信頼性'],
+    weaknesses:['頑固','融通がきかない','心配性','保守的すぎる'],
+    love:'真面目で一途。短期的な恋より、共に人生を築ける相手を求めます。情熱的というより、静かで深い愛情が特徴。安心感を大切にする相手と相性が良いでしょう。',
+    careerText:'地道な努力が実を結ぶ世界で力を発揮します。基礎を作る仕事、専門性を磨く仕事に向いています。',
+    careerList:['建築家','エンジニア','公務員','会計士','職人','研究者','教師'],
+    compat:[2,6,8],
+    color:{name:'緑・深緑', hex:'#2d8659'}, stone:'エメラルド・翡翠', day:'土曜日',
+  },
+  5: {
+    title:'自由人', sub:'変化と 冒険を 愛する 好奇心の 塊',
+    keys:['自由','変化','冒険','好奇心','適応力'],
+    persona:'5は「動き」と「自由」を象徴する数字。あなたは一所に留まることを苦手とし、新しい体験、新しい場所、新しい人との出会いを糧にして成長します。多才で適応力が高く、人生を旅のように味わう魂。束縛から逃れ、自由に生きることでこそ、本当の自分に出会えます。',
+    strengths:['適応力','行動力','社交性','機転','多才','好奇心'],
+    weaknesses:['飽きっぽい','落ち着きがない','責任回避','刺激への依存'],
+    love:'自由を愛するあなたは、束縛されると息が詰まります。一緒に冒険できる相手、自分の世界を尊重してくれる相手が理想。同じ自由を愛する者どうしの恋が長続きします。',
+    careerText:'移動と変化のある環境、人と接する仕事で輝きます。同じ場所に長くいるよりも、流動的なキャリアが合います。',
+    careerList:['記者','旅行業','営業','通訳','投資家','クリエイター','起業家'],
+    compat:[1,3,7],
+    color:{name:'青・ターコイズ', hex:'#3aa6c7'}, stone:'アクアマリン・ターコイズ', day:'水曜日',
+  },
+  6: {
+    title:'愛の人', sub:'家族と 仲間を 慈しむ 温かい 守護者',
+    keys:['愛','責任','調和','癒し','家族'],
+    persona:'6は「愛」と「家庭」を象徴する数字。あなたは深い愛情と責任感の持ち主で、大切な人を守ることに人生の意味を見出します。生まれながらの世話好きで、温かい雰囲気を周囲に広げる存在。美しいものへの感性も豊かで、家や周囲を心地よく整える才能があります。',
+    strengths:['思いやり','責任感','愛情深さ','美的感覚','癒し','家庭的'],
+    weaknesses:['お節介','自己犠牲','心配性','嫉妬深い'],
+    love:'結婚や家庭を大切にする愛のスペシャリスト。相手に尽くしますが、尽くしすぎて自分を見失わないよう注意。お互いに支え合える関係が理想です。',
+    careerText:'人を癒し、育てる役割で輝きます。美と調和を扱う仕事、家庭的な分野が天職。',
+    careerList:['医療職','教育者','保育士','美容師','料理人','インテリア関係','ヒーラー'],
+    compat:[2,4,9],
+    color:{name:'ピンク・ローズ', hex:'#e879a8'}, stone:'ローズクォーツ・ピンクサファイア', day:'金曜日',
+  },
+  7: {
+    title:'探求者', sub:'真理を 追い求める 神秘的な 思索家',
+    keys:['探求','内省','神秘','知性','孤独'],
+    persona:'7は「神秘」と「叡智」を象徴する数字。あなたは表面的な世界に満足せず、その奥にある真実を求める魂を持っています。一人の時間が必要で、深く考え、深く感じることで成長します。直感が鋭く、言葉にならない何かを感じ取る力に長けています。世俗から距離を置くことで、独自の視点を磨いていく存在です。',
+    strengths:['洞察力','知性','直感','独立心','分析力','専門性'],
+    weaknesses:['孤独癖','疑い深い','感情を表せない','非社交的'],
+    love:'簡単には心を開きませんが、一度信頼した相手には深い愛を注ぎます。表面的な関係を嫌い、知的に語り合える相手を求めます。一人の時間を尊重してくれる人とこそ長続きします。',
+    careerText:'専門性を極める道、研究や分析を要する分野で本領を発揮します。一人で集中できる環境が理想。',
+    careerList:['研究者','学者','哲学者','占い師','スピリチュアルワーカー','ITエンジニア','作家'],
+    compat:[2,5,9],
+    color:{name:'紫・藤色', hex:'#8e6cb5'}, stone:'アメジスト', day:'月曜日',
+  },
+  8: {
+    title:'達成者', sub:'力と 成功を 引き寄せる 現実的な 戦略家',
+    keys:['権力','達成','財','現実主義','責任'],
+    persona:'8は「力」と「物質的成功」を象徴する数字。あなたは野心的で、努力次第で大きな成果を手にできる運の持ち主です。物事を俯瞰で見て戦略を立てる力に優れ、リーダーシップも発揮します。お金や権力との縁が深いですが、それを正しく扱うことで人生は大きく開けるでしょう。物質と精神のバランスが鍵となります。',
+    strengths:['実行力','戦略性','リーダーシップ','野心','責任感','金運'],
+    weaknesses:['支配的','物質主義','ワーカホリック','感情を抑える'],
+    love:'パートナーとも対等の関係を求めます。地位や経済力にも価値を置きますが、本当の充足は深い精神的な絆から。仕事ばかりで愛情表現を忘れないよう意識すると関係が安定します。',
+    careerText:'大きな組織やビジネスの世界で力を発揮します。責任あるポジション、お金を扱う仕事が向いています。',
+    careerList:['経営者','投資家','弁護士','銀行員','プロデューサー','政治家','大企業役員'],
+    compat:[2,4,6],
+    color:{name:'黒・金', hex:'#c79b1f'}, stone:'ガーネット・タイガーアイ', day:'土曜日',
+  },
+  9: {
+    title:'賢者', sub:'博愛と 完成を 象徴する 大いなる 存在',
+    keys:['博愛','完成','寛容','叡智','奉仕'],
+    persona:'9は1〜8のすべての性質を内包する「完成」の数字。あなたは器が大きく、誰に対しても分け隔てなく接する博愛精神を持ちます。古い魂とも言われ、人生経験が豊かで、若くして人生の真理を悟ることも。自分の利益より、より大きな何かのために生きることで、最も満たされる存在です。',
+    strengths:['寛容さ','洞察力','理想主義','カリスマ','創造性','献身'],
+    weaknesses:['理想と現実の乖離','感傷的','現実逃避','放任'],
+    love:'相手を深く理解しようとする愛し方をします。世俗的な恋愛より、魂のレベルでつながれる関係を求めます。執着を手放すことで、より純粋な愛が見えてくるでしょう。',
+    careerText:'人や社会に貢献する仕事で輝きます。利益よりも理念や使命に動かされるタイプです。',
+    careerList:['医療職','教育者','社会活動家','芸術家','カウンセラー','宗教家','慈善活動家'],
+    compat:[3,6,7],
+    color:{name:'金・虹色', hex:'#d4af37'}, stone:'オパール・サンストーン', day:'火曜日',
+  },
+  11: {
+    title:'霊感の人', sub:'直感と インスピレーションに 導かれる 啓発者',
+    keys:['直感','霊性','啓発','理想','繊細'],
+    persona:'11はマスターナンバー。あなたは並外れた直感力と霊的な感受性を持ち、見えない世界からのメッセージを受け取る能力があります。理想が高く、人々を精神的に高める使命を帯びています。繊細すぎるゆえに苦しむこともありますが、その感受性こそ才能。自分を信じて道を進むとき、周囲を照らす光となるでしょう。',
+    strengths:['直感力','霊性','理想主義','カリスマ','インスピレーション','感受性'],
+    weaknesses:['神経質','過敏','理想と現実の溝','エネルギーの揺らぎ'],
+    love:'運命的な出会いを引き寄せやすい星のもとに生まれています。心と心が通じ合う深い愛を求め、表面的な関係には満足できません。直感に従うことで、本当の伴侶に出会うでしょう。',
+    careerText:'精神的・スピリチュアルな分野、人を導く仕事で本領を発揮します。創造的でビジョンを示す役割が向きます。',
+    careerList:['ヒーラー','スピリチュアルワーカー','芸術家','教師','カウンセラー','宗教家'],
+    compat:[2,4,22],
+    color:{name:'銀・パールホワイト', hex:'#dcd6e6'}, stone:'ラピスラズリ・セレナイト', day:'月曜日',
+  },
+  22: {
+    title:'マスタービルダー', sub:'夢を 現実に 変える 偉大な 創造者',
+    keys:['実現力','ビジョン','偉業','奉仕','カリスマ'],
+    persona:'22はマスターナンバーの中でも最強と呼ばれる数字。あなたは大きな夢を、確かな計画と実行力で現実にする力を持っています。理想と現実の橋渡し役であり、世界規模の影響をもたらす可能性すら秘めています。重い使命ゆえに人生の試練も大きいですが、それを乗り越えたとき、あなたの存在は永遠に残るものとなります。',
+    strengths:['実現力','カリスマ','戦略性','直感','構築力','責任感'],
+    weaknesses:['プレッシャー','完璧主義','燃え尽き','重圧'],
+    love:'人生の伴走者を求めるタイプ。ともに大きな夢を描ける相手こそ理想です。仕事に没頭しがちですが、深い愛があなたを支える土台となります。',
+    careerText:'スケールの大きな仕事、社会を動かす立場で本領を発揮します。事業家・建築家・指導者として歴史に名を残すことも。',
+    careerList:['経営者','建築家','政治家','プロデューサー','社会起業家','大プロジェクトのリーダー'],
+    compat:[4,8,11],
+    color:{name:'金・赤金', hex:'#cf9c2b'}, stone:'シトリン・ゴールドルチル', day:'土曜日',
+  },
+  33: {
+    title:'マスターティーチャー', sub:'無条件の 愛で 世界を 癒す 稀有な 魂',
+    keys:['無条件の愛','奉仕','癒し','教え','聖なる役割'],
+    persona:'33は最も稀少なマスターナンバー。あなたは「愛そのもの」を生きるために生まれてきた魂で、見返りを求めず人を癒し、育てる使命を持ちます。器が大きく、苦しむ人に手を差し伸べる優しさは比類のないもの。日常では穏やかに見えますが、内側には深く強い精神性が宿っています。自分を犠牲にしすぎず、まず自分を愛することが大切です。',
+    strengths:['無条件の愛','癒しの力','献身','叡智','カリスマ','深い慈悲'],
+    weaknesses:['自己犠牲','重荷を背負いすぎる','現実離れ','疲弊'],
+    love:'恋愛においても深く広い愛を注ぎます。相手の魂のレベルでつながれる関係を求め、表面的な愛では満たされません。自分を愛することを忘れずに。',
+    careerText:'人を癒し、教え、導く仕事で本領を発揮します。大きな愛を社会に還元する役割が天命です。',
+    careerList:['ヒーラー','教育者','宗教家','カウンセラー','社会奉仕家','慈善活動家'],
+    compat:[6,9,22],
+    color:{name:'真っ白・虹色', hex:'#f0eef9'}, stone:'クリアクオーツ・ダイヤモンド', day:'金曜日',
+  },
+};
+
+// 誕生日数 簡易メッセージ
+const BIRTHDAY_NUMS = {
+  1:{t:'独立心の強い 開拓者気質', d:'自分の道を切り開く力。意思の強さがあなたの個性です。'},
+  2:{t:'人と調和する 優しい人', d:'人の心を感じ取る繊細さ。誰かに寄り添う力に長けています。'},
+  3:{t:'明るく 表現豊かな人', d:'喜びを生み出す才能。あなたといると周囲が明るくなります。'},
+  4:{t:'まじめで 信頼される人', d:'地道に積み上げる力。誠実さがあなたの強みです。'},
+  5:{t:'自由を愛する 冒険者', d:'好奇心と行動力で人生を彩ります。変化があなたの栄養です。'},
+  6:{t:'温かく 面倒見のよい人', d:'愛情深さで周囲を支えます。家族や仲間が宝物です。'},
+  7:{t:'物事を 深く考える人', d:'真実を探す目を持ちます。一人の時間で力が満ちます。'},
+  8:{t:'力強く 結果を出す人', d:'実行力と統率力。あなたが動くと物事が形になります。'},
+  9:{t:'やさしく 賢い人', d:'広い視野と深い理解。人を分け隔てなく愛せる人です。'},
+  11:{t:'直感の鋭い 感受性の人', d:'霊感に近いひらめきを持ちます。心の声を信じてください。'},
+  22:{t:'夢を形にする 力の人', d:'壮大な構想を実現する力。誰よりも大きな景色を見ます。'},
+  33:{t:'愛そのもの の人', d:'人を癒し育てる稀有な才能。優しさが世界を変えます。'},
+};
+
+// 個人年数（その年のテーマ）
+const PERSONAL_YEARS = {
+  1:{t:'新しい 始まりの 年', d:'種をまく時期。挑戦と決断が次の9年を決めます。'},
+  2:{t:'関係性と 忍耐の 年', d:'人とのつながりを育む時。焦らず、関係性に投資を。'},
+  3:{t:'創造と 表現の 年', d:'楽しみと表現の時。新しい趣味、人脈、喜びを存分に。'},
+  4:{t:'基礎を 固める 年', d:'コツコツと土台作り。地道な努力が後で必ず実ります。'},
+  5:{t:'変化と 自由の 年', d:'動きと変革の時。新しい場所、新しい体験が運を開きます。'},
+  6:{t:'愛と 責任の 年', d:'家族・パートナー・大切な人との絆を見つめ直す時。'},
+  7:{t:'内省と 学びの 年', d:'立ち止まり、深く考える時。一人の時間と学びが宝。'},
+  8:{t:'達成と 収穫の 年', d:'努力が形になる年。仕事・経済面で大きな成果が望めます。'},
+  9:{t:'完成と 手放しの 年', d:'1サイクルの締めくくり。古いものを手放し、次の準備を。'},
+  11:{t:'啓発の 特別な 年', d:'直感とひらめきが冴える時。霊的な気づきが訪れます。'},
+  22:{t:'大きな実現の 特別な 年', d:'壮大な夢が形になる時。挑戦を恐れずに進んでください。'},
+  33:{t:'愛と 奉仕の 特別な 年', d:'人を癒し、世に還元する時。あなたの優しさが力に。'},
+};
+
+// ============================================================
+//  画面遷移
+// ============================================================
+function showScr(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function goInput(){ showScr('inputScr'); }
+
+// ============================================================
+//  占う！
+// ============================================================
+function onDivine(){
+  document.getElementById('errZone').innerHTML = '';
+  const y = +document.getElementById('selY').value;
+  const m = +document.getElementById('selM').value;
+  const d = +document.getElementById('selD').value;
+  if(!y || !m || !d){
+    document.getElementById('errZone').innerHTML =
+      `<div class="err">生年月日を 選んでください</div>`;
+    return;
+  }
+  // 妥当性チェック
+  const dt = new Date(y, m-1, d);
+  if(dt.getFullYear()!==y || dt.getMonth()!==m-1 || dt.getDate()!==d){
+    document.getElementById('errZone').innerHTML =
+      `<div class="err">日付が 正しくありません</div>`;
+    return;
+  }
+  showScr('loadScr');
+  const msgs = [
+    '星と数を 読み解いています…',
+    '宇宙の リズムを 感じています…',
+    'あなたの 数字が 浮かび上がります…',
+  ];
+  const lm = document.getElementById('loadMsg');
+  let i = 0;
+  lm.textContent = msgs[0];
+  const t = setInterval(()=>{ lm.textContent = msgs[++i % msgs.length]; }, 700);
+  setTimeout(()=>{ clearInterval(t); renderResult(y, m, d); showScr('resultScr'); }, 1900);
+}
+
+// ============================================================
+//  結果レンダリング
+// ============================================================
+function renderResult(y, m, d){
+  const detail = lifePathDetail(y, m, d);
+  const lp     = detail.lp;
+  const data   = NUMBERS[lp] || NUMBERS[9];
+  const isMaster = (lp === 11 || lp === 22 || lp === 33);
+
+  // ヒーロー
+  const heroNum = document.getElementById('heroNum');
+  heroNum.textContent = lp;
+  heroNum.classList.toggle('master', isMaster);
+  document.getElementById('heroTitle').textContent = data.title;
+  document.getElementById('heroSub').textContent   = data.sub;
+  const keys = document.getElementById('heroKeys');
+  keys.innerHTML = data.keys.map(k=>`<span class="key-pill">${k}</span>`).join('');
+
+  // 性格
+  document.getElementById('rPersona').textContent = data.persona;
+
+  // 長所・短所
+  document.getElementById('rStrengths').innerHTML =
+    data.strengths.map(s=>`<span class="trait">+ ${s}</span>`).join('');
+  document.getElementById('rWeaknesses').innerHTML =
+    data.weaknesses.map(s=>`<span class="trait minus">− ${s}</span>`).join('');
+
+  // 恋愛
+  document.getElementById('rLove').textContent = data.love;
+
+  // 仕事
+  document.getElementById('rCareer').textContent = data.careerText;
+  document.getElementById('rCareerList').innerHTML =
+    data.careerList.map(c=>`<span class="trait">${c}</span>`).join('');
+
+  // ラッキー
+  document.getElementById('cDot').style.background = data.color.hex;
+  document.getElementById('cName').textContent  = data.color.name;
+  document.getElementById('cStone').textContent = data.stone;
+  document.getElementById('cDay').textContent   = data.day;
+  document.getElementById('cCompat').textContent = data.compat.map(n=>`${n}`).join(' ・ ');
+
+  // 誕生日数
+  const bd  = birthDayNumber(d);
+  const bdData = BIRTHDAY_NUMS[bd] || BIRTHDAY_NUMS[9];
+  const dayNumEl = document.getElementById('dayNum');
+  dayNumEl.textContent = bd;
+  document.getElementById('dayTitle').textContent = bdData.t;
+  document.getElementById('dayDesc').textContent  = bdData.d;
+
+  // 個人年数（今年）
+  const today = new Date();
+  const curY  = today.getFullYear();
+  const py    = personalYearNumber(m, d, curY);
+  const pyData = PERSONAL_YEARS[py] || PERSONAL_YEARS[9];
+  document.getElementById('pyHead').textContent  = `${curY}年の あなたの テーマ`;
+  document.getElementById('pyNum').textContent   = py;
+  document.getElementById('pyTitle').textContent = pyData.t;
+  document.getElementById('pyDesc').textContent  = pyData.d;
+
+  // 計算式
+  const calcLines = [];
+  calcLines.push(`生年月日: <strong>${y}年${m}月${d}日</strong>`);
+  calcLines.push('');
+  calcLines.push(`年: ${y} → ${digitsBreak(y)} = <strong>${detail.ry}</strong>`);
+  calcLines.push(`月: ${m} → <strong>${detail.rm}</strong>`);
+  calcLines.push(`日: ${d} → ${digitsBreak(d)} = <strong>${detail.rd}</strong>`);
+  calcLines.push('');
+  calcLines.push(`合計: ${detail.ry} + ${detail.rm} + ${detail.rd} = <strong>${detail.sum}</strong>`);
+  if(detail.sum !== detail.lp){
+    if(isMaster){
+      calcLines.push(`→ <strong>${detail.lp}</strong> (マスターナンバー)`);
+    }else{
+      calcLines.push(`→ ${digitsBreak(detail.sum)} = <strong>${detail.lp}</strong>`);
+    }
+  }
+  calcLines.push('');
+  calcLines.push(`◆ ライフパスナンバー = <strong>${detail.lp}</strong>`);
+  document.getElementById('calcBox').innerHTML = calcLines.map(l=>l||'&nbsp;').join('<br>');
+}
+
+function digitsBreak(n){
+  const s = String(n);
+  if(s.length <= 1) return s;
+  return s.split('').join('+') + ' = ' + digitSum(n);
+}
+</script>
+</body>
+</html>
