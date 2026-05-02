@@ -477,26 +477,28 @@ function digitSum(n){
   for(const c of String(Math.abs(n))) s += +c || 0;
   return s;
 }
+function isMasterNum(n){ return n === 11 || n === 22 || n === 33; }
 function reduceNum(n){
-  if (n === 11 || n === 22 || n === 33) return n;
+  if (isMasterNum(n)) return n;
   while(n > 9){
     n = digitSum(n);
-    if (n === 11 || n === 22 || n === 33) return n;
+    if (isMasterNum(n)) return n;
   }
   return n;
 }
 function lifePathDetail(y, m, d){
-  // 各要素を先に reduce してから合計（マスターナンバーを保持）
-  const ry = reduceNum(y);
-  const rm = reduceNum(m);
-  const rd = reduceNum(d);
-  const sum = ry + rm + rd;
-  const lp = reduceNum(sum);
-  return { ry, rm, rd, sum, lp };
+  // 年月日のすべての数字をいったん一気に合計してから reduce
+  // (途中で 11/22/33 が出たら そこで止める)
+  const dy = digitSum(y);
+  const dm = digitSum(m);
+  const dd = digitSum(d);
+  const total = dy + dm + dd;
+  const lp = reduceNum(total);
+  return { dy, dm, dd, total, lp };
 }
 function birthDayNumber(d){ return reduceNum(d); }
 function personalYearNumber(month, day, year){
-  return reduceNum(reduceNum(month) + reduceNum(day) + reduceNum(year));
+  return reduceNum(digitSum(month) + digitSum(day) + digitSum(year));
 }
 
 // ============================================================
@@ -731,12 +733,12 @@ function renderResult(y, m, d){
   const detail = lifePathDetail(y, m, d);
   const lp     = detail.lp;
   const data   = NUMBERS[lp] || NUMBERS[9];
-  const isMaster = (lp === 11 || lp === 22 || lp === 33);
+  const lpIsMaster = isMasterNum(lp);
 
   // ヒーロー
   const heroNum = document.getElementById('heroNum');
   heroNum.textContent = lp;
-  heroNum.classList.toggle('master', isMaster);
+  heroNum.classList.toggle('master', lpIsMaster);
   document.getElementById('heroTitle').textContent = data.title;
   document.getElementById('heroSub').textContent   = data.sub;
   const keys = document.getElementById('heroKeys');
@@ -784,25 +786,36 @@ function renderResult(y, m, d){
   document.getElementById('pyTitle').textContent = pyData.t;
   document.getElementById('pyDesc').textContent  = pyData.d;
 
-  // 計算式
+  // 計算式 — すべての数字を一気に足してから減らす
   const calcLines = [];
   calcLines.push(`生年月日: <strong>${y}年${m}月${d}日</strong>`);
   calcLines.push('');
-  calcLines.push(`年: ${y} → ${digitsBreak(y)} = <strong>${detail.ry}</strong>`);
-  calcLines.push(`月: ${m} → <strong>${detail.rm}</strong>`);
-  calcLines.push(`日: ${d} → ${digitsBreak(d)} = <strong>${detail.rd}</strong>`);
+  calcLines.push('すべての 数字を 足します:');
+  calcLines.push(`${digitsListing(y, m, d)} = <strong>${detail.total}</strong>`);
   calcLines.push('');
-  calcLines.push(`合計: ${detail.ry} + ${detail.rm} + ${detail.rd} = <strong>${detail.sum}</strong>`);
-  if(detail.sum !== detail.lp){
-    if(isMaster){
-      calcLines.push(`→ <strong>${detail.lp}</strong> (マスターナンバー)`);
-    }else{
-      calcLines.push(`→ ${digitsBreak(detail.sum)} = <strong>${detail.lp}</strong>`);
+  // 段階的に減らす（11/22/33 が出たら止める）
+  if (isMasterNum(detail.total)) {
+    calcLines.push(`<strong>${detail.total}</strong> ✦ マスターナンバー`);
+  } else {
+    let cur = detail.total;
+    while (cur > 9) {
+      const next = digitSum(cur);
+      if (isMasterNum(next)) {
+        calcLines.push(`${digitsBreak(cur)} ✦ マスターナンバー`);
+        break;
+      }
+      calcLines.push(`${digitsBreak(cur)}`);
+      cur = next;
     }
   }
   calcLines.push('');
   calcLines.push(`◆ ライフパスナンバー = <strong>${detail.lp}</strong>`);
   document.getElementById('calcBox').innerHTML = calcLines.map(l=>l||'&nbsp;').join('<br>');
+}
+
+function digitsListing(y, m, d){
+  const split = n => String(n).split('').join('+');
+  return `${split(y)} + ${split(m)} + ${split(d)}`;
 }
 
 function digitsBreak(n){
