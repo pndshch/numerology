@@ -249,6 +249,7 @@
     box-shadow:0 0 24px rgba(255,215,0,.35);
   }
   .sub-num.violet{background:radial-gradient(circle at 35% 30%, #fff 0%, #c084fc 50%, #4c1d95 100%);box-shadow:0 0 24px rgba(180,120,255,.4);}
+  .sub-num.rose{background:radial-gradient(circle at 35% 30%, #fff 0%, #f9a8d4 50%, #9d174d 100%);box-shadow:0 0 24px rgba(255,140,200,.4);}
   .sub-info h4{font-size:.78rem;color:var(--gold);letter-spacing:.18em;font-weight:400;margin-bottom:4px;}
   .sub-info .sub-ttl{font-size:1.1rem;color:var(--cream);margin-bottom:3px;font-family:'Yu Mincho',serif;}
   .sub-info .sub-desc{font-size:.85rem;color:var(--cream-dim);line-height:1.7;}
@@ -379,7 +380,7 @@
 
     <div class="card">
       <div class="sec" style="margin-bottom:14px;">
-        <h3>もうひとつの 数</h3>
+        <h3>あなたを 形作る ほかの 数</h3>
       </div>
       <div class="sub-card" style="margin-bottom:12px;">
         <div class="sub-num" id="dayNum">0</div>
@@ -387,6 +388,14 @@
           <h4>誕生日数 — BIRTH DAY</h4>
           <div class="sub-ttl" id="dayTitle"></div>
           <div class="sub-desc" id="dayDesc"></div>
+        </div>
+      </div>
+      <div class="sub-card" style="margin-bottom:12px;">
+        <div class="sub-num rose" id="qNum">0</div>
+        <div class="sub-info">
+          <h4>探求数 — QUEST NUMBER</h4>
+          <div class="sub-ttl" id="qTitle"></div>
+          <div class="sub-desc" id="qDesc"></div>
         </div>
       </div>
       <div class="sub-card">
@@ -499,6 +508,10 @@ function lifePathDetail(y, m, d){
 function birthDayNumber(d){ return reduceNum(d); }
 function personalYearNumber(month, day, year){
   return reduceNum(digitSum(month) + digitSum(day) + digitSum(year));
+}
+// 探求数: 月と日の数字を 一桁になるまで 足す。マスターナンバー(11/22/33)が出たら止める。
+function questNumber(month, day){
+  return reduceNum(digitSum(month) + digitSum(day));
 }
 
 // ============================================================
@@ -667,6 +680,22 @@ const BIRTHDAY_NUMS = {
   33:{t:'愛そのもの の人', d:'人を癒し育てる稀有な才能。優しさが世界を変えます。'},
 };
 
+// 探求数（人生後半に向き合うテーマ・潜在的なこだわり）
+const QUEST_NUMS = {
+  1:{t:'自立と 自分の道', d:'人に合わせるより、自分で決めて進む力を磨くテーマ。後半生で「自分の意志で生きる」感覚を取り戻します。'},
+  2:{t:'調和と 寄り添う心', d:'独りで頑張りすぎず、人と支え合うことを学ぶテーマ。柔らかさと受け取る勇気が後半生の鍵です。'},
+  3:{t:'喜びと 自己表現', d:'義務や役割を脇に置き、純粋に楽しむことを取り戻すテーマ。創造性が後半生の彩りになります。'},
+  4:{t:'地に足を つけた 暮らし', d:'コツコツ積み上げる日々の習慣を整えるテーマ。誠実さと安定が後半生の土台になります。'},
+  5:{t:'自由と 変化の 受容', d:'固定観念を手放し、新しい体験に開かれていくテーマ。柔軟さが後半生の風通しを良くします。'},
+  6:{t:'愛と 慈しみ', d:'家族や近しい人との絆を見つめ直すテーマ。与え過ぎず、自分への愛も忘れないことが鍵です。'},
+  7:{t:'内なる 真理の 探究', d:'静けさの中で本当の自分と向き合うテーマ。学びと内省が後半生に深い知恵をもたらします。'},
+  8:{t:'達成と 真の 豊かさ', d:'これまでの努力を形にし、力と豊かさを正しく扱うテーマ。物質と精神のバランスが鍵です。'},
+  9:{t:'手放しと 大きな視点', d:'執着を手放し、より広い視野で人生を眺めるテーマ。後半生は与え、還元する時期になります。'},
+  11:{t:'直感と 霊性の 開花', d:'見えない世界とのつながりを通して、人を導き照らすテーマ。研ぎ澄まされた感性が後半生の道標です。'},
+  22:{t:'夢を 現実に する 使命', d:'壮大なビジョンを形にしていくテーマ。後半生で大きな構想を担う器が育ちます。'},
+  33:{t:'無条件の 愛と 奉仕', d:'見返りを求めず人を癒し育てるテーマ。後半生で深い慈悲が周囲を変えていきます。'},
+};
+
 // 個人年数（その年のテーマ）
 const PERSONAL_YEARS = {
   1:{t:'新しい 始まりの 年', d:'種をまく時期。挑戦と決断が次の9年を決めます。'},
@@ -776,6 +805,13 @@ function renderResult(y, m, d){
   document.getElementById('dayTitle').textContent = bdData.t;
   document.getElementById('dayDesc').textContent  = bdData.d;
 
+  // 探求数（人生後半のテーマ）
+  const q = questNumber(m, d);
+  const qData = QUEST_NUMS[q] || QUEST_NUMS[9];
+  document.getElementById('qNum').textContent   = q;
+  document.getElementById('qTitle').textContent = qData.t;
+  document.getElementById('qDesc').textContent  = qData.d;
+
   // 個人年数（今年）
   const today = new Date();
   const curY  = today.getFullYear();
@@ -810,6 +846,30 @@ function renderResult(y, m, d){
   }
   calcLines.push('');
   calcLines.push(`◆ ライフパスナンバー = <strong>${detail.lp}</strong>`);
+
+  // 探求数の計算過程
+  calcLines.push('');
+  calcLines.push('— 探求数 —');
+  calcLines.push('月と日の 数字を 足します:');
+  const qSum = digitSum(m) + digitSum(d);
+  const splitQ = n => String(n).split('').join('+');
+  calcLines.push(`${splitQ(m)} + ${splitQ(d)} = <strong>${qSum}</strong>`);
+  if (isMasterNum(qSum)) {
+    calcLines.push(`<strong>${qSum}</strong> ✦ マスターナンバー`);
+  } else {
+    let curQ = qSum;
+    while (curQ > 9) {
+      const nextQ = digitSum(curQ);
+      if (isMasterNum(nextQ)) {
+        calcLines.push(`${digitsBreak(curQ)} ✦ マスターナンバー`);
+        break;
+      }
+      calcLines.push(`${digitsBreak(curQ)}`);
+      curQ = nextQ;
+    }
+  }
+  calcLines.push(`◆ 探求数 = <strong>${q}</strong>`);
+
   document.getElementById('calcBox').innerHTML = calcLines.map(l=>l||'&nbsp;').join('<br>');
 }
 
